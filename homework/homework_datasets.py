@@ -105,10 +105,11 @@ def main():
         dataset = CSVDataset(csv_path, target_column="price")
         features, target = dataset[0]
 
-        print(f"Rows: {len(dataset)}")
-        print(f"Feature shape: {tuple(dataset.features.shape)}")
-        print(f"First example: {features.tolist()}")
-        print(f"First target: {target.item()}")
+        print("\n2.1 Кастомный Dataset класс")
+        print(f"Количество строк: {len(dataset)}")
+        print(f"Размерность признаков: {tuple(dataset.features.shape)}")
+        print(f"Признаки первого примера: {features.tolist()}")
+        print(f"Целевое значение первого примера: {target.item()}")
 
 
 def save_dataset_csv(dataset, path):
@@ -151,9 +152,9 @@ def run_csv_regression(path, row_count):
             model(test.features), test.targets
         ).item()
     torch.save(model.state_dict(), path.parent.parent / "models" / "diabetes_linear.pth")
-    print("\n2.2 Diabetes — linear regression")
-    print(f"Best validation MSE: {best_mse:.2f}")
-    print(f"Test MSE: {test_mse:.2f}")
+    print("\nDiabetes — линейная регрессия")
+    print(f"Минимальная MSE на валидации: {best_mse:.2f}")
+    print(f"MSE на тестовой выборке: {test_mse:.2f}")
 
 
 def run_csv_classification(path, labels):
@@ -187,7 +188,7 @@ def run_csv_classification(path, labels):
             total_loss += loss.item() * len(targets)
 
         if epoch % 15 == 0:
-            logging.info("Epoch %d | Binary loss: %.4f", epoch, total_loss / len(train))
+            logging.info("Эпоха %d | Бинарная кросс-энтропия: %.4f", epoch, total_loss / len(train))
 
     model.eval()
     with torch.no_grad():
@@ -196,15 +197,16 @@ def run_csv_classification(path, labels):
     targets = test.targets.flatten().numpy()
     predictions = (probabilities >= 0.5).astype(int)
     torch.save(model.state_dict(), path.parent.parent / "models" / "breast_cancer_logistic.pth")
-    print("\n2.2 Breast Cancer — binary logistic regression")
-    print(f"Test accuracy: {accuracy_score(targets, predictions):.4f}")
-    print(f"Test ROC-AUC: {roc_auc_score(targets, probabilities):.4f}")
+    print("\nBreast Cancer — бинарная логистическая регрессия")
+    print(f"Доля верных ответов на тестовой выборке: {accuracy_score(targets, predictions):.4f}")
+    print(f"ROC-AUC на тестовой выборке: {roc_auc_score(targets, probabilities):.4f}")
 
 
 def run_csv_experiments():
     """Подготавливает два CSV-файла и запускает обучение моделей."""
     logging.basicConfig(level=logging.INFO, format="%(message)s")
     torch.manual_seed(42)
+    print("\n2.2 Эксперименты с различными датасетами")
 
     data_dir = Path(__file__).resolve().parent / "data"
     data_dir.mkdir(exist_ok=True)

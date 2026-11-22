@@ -21,6 +21,13 @@ OPTIMIZERS = {
     "RMSprop": torch.optim.RMSprop,
 }
 
+FEATURE_LABELS = {
+    "Baseline": "Исходные",
+    "Polynomial": "Полиномиальные",
+    "Interactions": "Взаимодействия",
+    "Statistics": "Статистические",
+}
+
 
 def load_experiment_data(csv_path):
     """Разделяет данные на обучающую, валидационную и тестовую выборки."""
@@ -150,7 +157,7 @@ def run_hyperparameter_search(train, validation, test, output_path):
             best_model = model
 
         logging.info(
-            "%-7s | lr=%5.3f | batch=%2d | validation loss=%.4f",
+            "%-7s | Скорость=%5.3f | Батч=%2d | Потери на валидации=%.4f",
             optimizer_name,
             lr,
             batch_size,
@@ -163,14 +170,14 @@ def run_hyperparameter_search(train, validation, test, output_path):
     best = results[0]
     test_metrics = evaluate_binary_model(best_model, test.features, test.targets)
 
-    print("\n3.1 Best hyperparameters")
-    print(f"Optimizer: {best['optimizer']}")
-    print(f"Learning rate: {best['learning_rate']}")
-    print(f"Batch size: {best['batch_size']}")
-    print(f"Validation loss: {best['validation_loss']:.4f}")
-    print(f"Test accuracy: {test_metrics['accuracy']:.4f}")
-    print(f"Test ROC-AUC: {test_metrics['roc_auc']:.4f}")
-    print(f"Results saved to: {output_path}")
+    print("\n3.1 Исследование гиперпараметров")
+    print(f"Лучший оптимизатор: {best['optimizer']}")
+    print(f"Скорость обучения: {best['learning_rate']}")
+    print(f"Размер батча: {best['batch_size']}")
+    print(f"Потери на валидации: {best['validation_loss']:.4f}")
+    print(f"Доля верных ответов на тестовой выборке: {test_metrics['accuracy']:.4f}")
+    print(f"ROC-AUC на тестовой выборке: {test_metrics['roc_auc']:.4f}")
+    print(f"Результаты сохранены: {output_path}")
 
     return best
 
@@ -208,10 +215,10 @@ def run_feature_engineering(train, validation, test, best, data_dir, plots_dir):
     original_count = train.features.shape[1]
     results = []
 
-    print("\n3.2 Feature engineering")
+    print("\n3.2 Feature Engineering")
     print(
-        f"{'Variant':<15} {'Features':>8} {'Val. loss':>10} "
-        f"{'Test acc.':>10} {'Test AUC':>10}"
+        f"{'Набор признаков':<16} {'Число':>8} {'BCE (валидация)':>16} "
+        f"{'Доля верных (тест)':>18} {'ROC-AUC (тест)':>15}"
     )
 
     for variant in ("Baseline", "Polynomial", "Interactions", "Statistics"):
@@ -251,10 +258,10 @@ def run_feature_engineering(train, validation, test, best, data_dir, plots_dir):
         )
 
         print(
-            f"{variant:<15} {train_x.shape[1]:>8} "
-            f"{val_metrics['loss']:>10.4f} "
-            f"{test_metrics['accuracy']:>10.4f} "
-            f"{test_metrics['roc_auc']:>10.4f}"
+            f"{FEATURE_LABELS[variant]:<16} {train_x.shape[1]:>8} "
+            f"{val_metrics['loss']:>16.4f} "
+            f"{test_metrics['accuracy']:>18.4f} "
+            f"{test_metrics['roc_auc']:>15.4f}"
         )
 
     results_path = data_dir / "feature_engineering_results.csv"
@@ -265,19 +272,20 @@ def run_feature_engineering(train, validation, test, best, data_dir, plots_dir):
 
     figure, axis = plt.subplots(figsize=(8, 4))
     bars = axis.bar(
-        [result["variant"] for result in results],
+        [FEATURE_LABELS[result["variant"]] for result in results],
         [result["validation_loss"] for result in results],
     )
     axis.bar_label(bars, fmt="%.4f", padding=3)
-    axis.set_ylabel("Validation loss (BCE)")
-    axis.set_title("Feature engineering — Breast Cancer")
+    axis.set_xlabel("Набор признаков")
+    axis.set_ylabel("Потери на валидации (BCE)")
+    axis.set_title("Сравнение наборов признаков — Breast Cancer")
     axis.margins(y=0.15)
     figure.tight_layout()
     figure.savefig(plot_path, dpi=150)
     plt.close(figure)
 
-    print(f"Results saved to: {results_path}")
-    print(f"Plot saved to: {plot_path}")
+    print(f"Результаты сохранены: {results_path}")
+    print(f"График сохранён: {plot_path}")
 
 
 def main():

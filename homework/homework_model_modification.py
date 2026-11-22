@@ -56,7 +56,7 @@ def train_linear_regression(
         with torch.no_grad():
             val_loss = criterion(model(x_val), y_val).item()
 
-        logging.info("Linear regression | Epoch %d | Validation MSE: %.5f", epoch, val_loss)
+        logging.info("Линейная регрессия | Эпоха %d | MSE на валидации: %.5f", epoch, val_loss)
 
         if val_loss < best_loss:
             best_loss = val_loss
@@ -85,10 +85,10 @@ def run_linear_regression():
     model = nn.Linear(1, 1)
     best_loss = train_linear_regression(model, train_loader, x[160:], y[160:])
 
-    print("\n1.1 Linear regression")
-    print(f"Best validation MSE: {best_loss:.5f}")
-    print(f"Weight: {model.weight.item():.3f}")
-    print(f"Bias: {model.bias.item():.3f}")
+    print("\n1.1 Расширение линейной регрессии")
+    print(f"Минимальная MSE на валидации: {best_loss:.5f}")
+    print(f"Вес: {model.weight.item():.3f}")
+    print(f"Смещение: {model.bias.item():.3f}")
 
 
 def run_multiclass_logistic_regression():
@@ -135,7 +135,7 @@ def run_multiclass_logistic_regression():
 
         if epoch % 20 == 0:
             logging.info(
-                "Logistic regression | Epoch %d | Loss: %.5f",
+                "Логистическая регрессия | Эпоха %d | Потери: %.5f",
                 epoch,
                 total_loss / len(train_loader.dataset),
             )
@@ -152,9 +152,9 @@ def run_multiclass_logistic_regression():
         y_test, probabilities, multi_class="ovr", average="macro"
     )
 
-    print("\n1.2 Multiclass logistic regression — Iris")
-    print(f"Precision: {precision:.4f}")
-    print(f"Recall:    {recall:.4f}")
+    print("\n1.2 Расширение логистической регрессии — Iris")
+    print(f"Точность (precision): {precision:.4f}")
+    print(f"Полнота (recall): {recall:.4f}")
     print(f"F1-score:  {f1:.4f}")
     print(f"ROC-AUC:   {auc:.4f}")
 
@@ -167,10 +167,15 @@ def run_multiclass_logistic_regression():
         display_labels=iris.target_names,
         cmap="Blues",
     )
+    display.ax_.set(
+        title="Матрица ошибок — Iris",
+        xlabel="Предсказанный класс",
+        ylabel="Истинный класс",
+    )
     display.figure_.tight_layout()
     display.figure_.savefig(plot_path, dpi=150)
     plt.close(display.figure_)
-    print(f"Confusion matrix saved to: {plot_path}")
+    print(f"Матрица ошибок сохранена: {plot_path}")
 
 
 def main():
